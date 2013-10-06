@@ -1,52 +1,145 @@
 require 'CSV'
 require 'english'
 
-source_directory = "/Users/Timothy/Documents/Code/GitHub/MMFileGenerator/"
-output_file = "UnenrichedSampleFile.txt"
-promotion_data_file = "promo_extract.csv"
+source_directory = '/Users/Timothy/Documents/Code/GitHub/MMFileGenerator/'
 
-global_offers_per_person = 6
-output_file_record_limit = 5
+output_file = 'UnenrichedSampleFile.txt'
+output_file_location = source_directory + output_file
+
+profile_data_file = 'profile_extract.csv'
+profile_data_file_location = source_directory + profile_data_file
+
+promotion_data_file = 'promo_extract.csv'
+promotion_data_file_location = source_directory + promotion_data_file
+
+#Number of offers included in file per person
+offers_per_person = 6
+
+#Number of customer records included in file
+output_file_record_limit = 10
 
 
-#Create, open and name file that is created
-somefile = File.open(output_file, "w")
+#Build structure of file and header row strings
+
+promotion_attributes_ary = []
+
+(1..offers_per_person).each do |i|
+	 promotion_attributes_ary.push(
+	 	"TPNB#{i}",
+	 	"TPNB#{i}_DESC",
+		"TPNB#{i}_IMAGE_URL",
+		"OFFERID#{i}",
+		"OFFERID#{i}_DESC",
+		"OFFERID#{i}_IMAGE_URL",
+		"OFFERID#{i}_STARTDATE",
+		"OFFERID#{i}_ENDDATE",
+		"ZONEID#{i}",
+		"TREATMENT_CODE#{i}")
+end
+
+record_attributes = [
+	"UCI@CHAR@36",
+	"UCI_VERSION_NUMBER@INT@10",
+	"SUPERCELLID@INT@12",
+	"CAMPAIGN_CODE@CHAR@16",
+	"CELL_CODE@CHAR@16",
+	"FIRST_SHOPPED_DOT_COM@CHAR@9",
+	"TEMPLATE_ID",
+	"EMAIL_ADDRESS@CHAR@128",
+	"FIRSTNAME@CHAR@32",
+	"SURNAME@CHAR@32",
+	"TITLE@CHAR@16",
+	"MIDDLEINITIAL@CHAR@5",
+	"MOBILE@CHAR@32",
+	"ADDRESS_LINE_1@CHAR@100",
+	"ADDRESS_LINE_2@CHAR@100",
+	"ADDRESS_LINE_3@CHAR@100",
+	"ADDRESS_LINE_4@CHAR@100",
+	"ADDRESS_LINE_5@CHAR@100",
+	promotion_attributes_ary,
+	"OFFERCOUNT"
+	]
+
+record_attributes.flatten!
 
 
+#Create the header row ary
+header_row_titles_ary = record_attributes
 
-#Create a record
+#Create an array of profile parameters from file
+#Assume structure of file is UCI,UCI_version
+profile_param_ary = []
+total_profiles_required_in_ary = output_file_record_limit
 
-#Insert header record- the same for every sample file
-somefile.write "UCI@CHAR@36\tUCI_VERSION_NUMBER@CHAR@10\tSUPERCELLID@INT@12\tCAMPAIGN_CODE@CHAR@16\tCELL_CODE@CHAR@16\tFIRST_SHOPPED_DOT_COM@CHAR@9\tTEMPLATE_ID\tEMAIL_ADDRESS@CHAR@128\tFIRSTNAME@CHAR@32\tSURNAME@CHAR@32\tTITLE@CHAR@16\tMIDDLEINITIAL@CHAR@5\tMOBILE@CHAR@32\tADDRESS_LINE_1@CHAR@100\tADDRESS_LINE_2@CHAR@100\tADDRESS_LINE_3@CHAR@100\tADDRESS_LINE_4@CHAR@100\tADDRESS_LINE_5@CHAR@100\tTPNB1\tTPNB1_DESC\tTPNB1_IMAGE_URL\tOFFERID1\tOFFERID1_DESC\tOFFERID1_IMAGE_URL\tOFFERID1_STARTDATE\tOFFERID1_ENDDATE\tZONEID1\tTREATMENT_CODE1\tTPNB2\tTPNB2_DESC\tTPNB2_IMAGE_URL\tOFFERID2\tOFFERID2_DESC\tOFFERID2_IMAGE_URL\tOFFERID2_STARTDATE\tOFFERID2_ENDDATE\tZONEID2\tTREATMENT_CODE2\tTPNB3\tTPNB3_DESC\tTPNB3_IMAGE_URL\tOFFERID3\tOFFERID3_DESC\tOFFERID3_IMAGE_URL\tOFFERID3_STARTDATE\tOFFERID3_ENDDATE\tZONEID3\tTREATMENT_CODE3\tTPNB4\tTPNB4_DESC\tTPNB4_IMAGE_URL\tOFFERID4\tOFFERID4_DESC\tOFFERID4_IMAGE_URL\tOFFERID4_STARTDATE\tOFFERID4_ENDDATE\tZONEID4\tTREATMENT_CODE4\tTPNB5\tTPNB5_DESC\tTPNB5_IMAGE_URL\tOFFERID5\tOFFERID5_DESC\tOFFERID5_IMAGE_URL\tOFFERID5_STARTDATE\tOFFERID5_ENDDATE\tZONEID5\tTREATMENT_CODE5\tTPNB6\tTPNB6_DESC\tTPNB6_IMAGE_URL\tOFFERID6\tOFFERID6_DESC\tOFFERID6_IMAGE_URL\tOFFERID6_STARTDATE\tOFFERID6_ENDDATE\tZONEID6\tTREATMENT_CODE6\tOFFERCOUNT\n"
-
-#Build contents of file
-output_file_record_count = 0
-until output_file_record_count > output_file_record_limit
-
-#Populate customer profile params
-somefile.write "UCI\tUCI_VERSION_NUMBER"
-#Insert padding for RED data
-somefile.write "\t" * 16
-
-#Populate promotion data - price and product parameters
-offers_per_person = global_offers_per_person
-
-#Read the promotions data file line by line
-CSV.foreach(promotion_data_file, :headers => :true ) do |line|
-	unless $INPUT_LINE_NUMBER > offers_per_person
-		somefile.write "#{line['TPNB']}" + "\t" * 2 + "#{line['OfferID']}" + "\t" * 3 + "#{line['ZoneID']}\tTreatmentCode\t"
+CSV.foreach(profile_data_file_location, :headers => :true ) do |line|
+	unless profile_param_ary.size >= total_profiles_required_in_ary
+		profile_param_ary.push(line)
 	end
 end
 
-#Populate offer count
-somefile.write "#{offers_per_person}\n"
+#Create an array of promotion parameters from file
+#Assume structure of file is TPNB,OfferID,ZoneID
+promo_param_ary = []
+total_promo_offers_required_in_ary = offers_per_person * output_file_record_limit
 
-output_file_record_count += 1
-
+CSV.foreach(promotion_data_file_location, :headers => :true ) do |line|
+	unless promo_param_ary.size >= total_promo_offers_required_in_ary
+		promo_param_ary.push(line)
+	end
 end
 
 
+#For the number of customer records required, build single customer record and add to output_ary. Match required data to header record string
+
+single_rec = []
+output_ary = []
+
+(1..output_file_record_limit).each do |record|
+	record_attributes.each_with_index do | e, index |
+		case e
+		when "UCI@CHAR@36"
+			single_rec[index] = profile_param_ary[0][0]
+		when "UCI_VERSION_NUMBER@INT@10"
+			single_rec[index] = profile_param_ary[0][1]
+		when "SUPERCELLID@INT@12"
+			single_rec[index] = 123456789101
+		when "CAMPAIGN_CODE@CHAR@16"
+			single_rec[index] = "CAMPABCDEFGHI123"
+		when "CELL_CODE@CHAR@16"
+			single_rec[index] = "CELLABCDEFGHI123"
+		when "FIRST_SHOPPED_DOT_COM@CHAR@9"
+			single_rec[index] = "FSHOPA123"
+		when /TPNB\d\d?$/
+			single_rec[index] = promo_param_ary[0][0]
+		when /OFFERID\d\d?$/
+			single_rec[index] = promo_param_ary[0][1]
+		when /ZONEID\d\d?$/
+			single_rec[index] = promo_param_ary[0][2]
+		when "OFFERCOUNT"
+			single_rec[index] = offers_per_person
+		else
+			single_rec[index] = "\t"
+		end
+	end
+	output_ary.push(single_rec)
+	profile_param_ary.shift
+	promo_param_ary.shift
+	single_rec = []
+end
 
 
-#Close file and write to directory
-somefile.close
+#Open and write header and customer records to the output file
+
+f = File.open(output_file_location, "w")
+
+#Create tab delimited string for header record from array and write to file
+header_row_str = header_row_titles_ary.join("\t")
+f.puts(header_row_str)
+
+#For each record, create tab delimited string from array and write to file
+output_ary.each do |record|
+	joined_record = record.join("")
+	f.puts(joined_record)
+end
+
+f.close
