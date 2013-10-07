@@ -1,7 +1,7 @@
 require 'CSV'
 require 'english'
 
-source_directory = '/Users/Timothy/Documents/Code/GitHub/MMFileGenerator/'
+source_directory = 'D:\Code\GitHub\MMFileGenerator-master\\'
 
 output_file = 'UnenrichedSampleFile.txt'
 output_file_location = source_directory + output_file
@@ -78,7 +78,7 @@ CSV.foreach(profile_data_file_location, :headers => :true ) do |line|
 end
 
 #Create an array of promotion parameters from file
-#Assume structure of file is TPNB,OfferID,ZoneID
+#Assume structure of file is OfferID,ZoneID,TPNB
 promo_param_ary = []
 total_promo_offers_required_in_ary = offers_per_person * output_file_record_limit
 
@@ -109,16 +109,16 @@ output_ary = []
 			single_rec[index] = "CELLABCDEFGHI123"
 		when "FIRST_SHOPPED_DOT_COM@CHAR@9"
 			single_rec[index] = "FSHOPA123"
-		when /TPNB\d\d?$/
-			single_rec[index] = promo_param_ary[0][0]
 		when /OFFERID\d\d?$/
-			single_rec[index] = promo_param_ary[0][1]
+			single_rec[index] = promo_param_ary[0][0]
 		when /ZONEID\d\d?$/
+			single_rec[index] = promo_param_ary[0][1]
+		when /TPNB\d\d?$/
 			single_rec[index] = promo_param_ary[0][2]
 		when "OFFERCOUNT"
 			single_rec[index] = offers_per_person
 		else
-			single_rec[index] = "\t"
+			single_rec[index] = ""
 		end
 	end
 	output_ary.push(single_rec)
@@ -138,7 +138,7 @@ f.puts(header_row_str)
 
 #For each record, create tab delimited string from array and write to file
 output_ary.each do |record|
-	joined_record = record.join("")
+	joined_record = record.join("\t")
 	f.puts(joined_record)
 end
 
