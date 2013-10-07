@@ -1,7 +1,10 @@
 require 'CSV'
 require 'english'
 
-source_directory = 'D:\Code\GitHub\MMFileGenerator-master\\'
+#For Mac
+source_directory = '/Users/Timothy/Documents/Code/GitHub/MMFileGenerator/'
+#For PC
+#source_directory = 'D:\Code\GitHub\MMFileGenerator-master\\'
 
 output_file = 'UnenrichedSampleFile.txt'
 output_file_location = source_directory + output_file
